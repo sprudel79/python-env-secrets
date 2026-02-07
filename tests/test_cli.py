@@ -27,7 +27,7 @@ class TestCli:
         rc = main(["--project", str(cli_env), "init"])
         assert rc == 0
         out = capsys.readouterr().out
-        assert "USER_SECRETS_ID" in out
+        assert "ENV_SECRETS_ID" in out
 
     def test_set_and_get(self, cli_env: Path, capsys: pytest.CaptureFixture[str]) -> None:
         main(["--project", str(cli_env), "set", "MYKEY", "myval"])
@@ -66,9 +66,9 @@ class TestCli:
         rc = main(["--project", str(cli_env), "info"])
         assert rc == 0
         out = capsys.readouterr().out
-        assert "USER_SECRETS_ID" in out
+        assert "ENV_SECRETS_ID" in out
 
     def test_no_command_prints_help(self, capsys: pytest.CaptureFixture[str]) -> None:
         rc = main([])
         assert rc == 0
-        assert "user-secrets" in capsys.readouterr().out
+        assert "env-secrets" in capsys.readouterr().out

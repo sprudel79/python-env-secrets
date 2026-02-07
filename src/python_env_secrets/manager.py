@@ -1,11 +1,11 @@
 """
-Python User Secrets Manager.
+Python Env Secrets Manager.
 
-Stores a USER_SECRETS_ID (GUID) in the project's local .env file and keeps
+Stores a ENV_SECRETS_ID (GUID) in the project's local .env file and keeps
 the actual secrets in a central, user-scoped directory:
 
-    Linux / macOS : ~/.python/usersecrets/<guid>/.secrets
-    Windows       : %APPDATA%/Python/UserSecrets/<guid>/.secrets
+    Linux / macOS : ~/.python/envsecrets/<guid>/.secrets
+    Windows       : %APPDATA%/Python/EnvSecrets/<guid>/.secrets
 
 Secrets are plain-text key=value pairs (same format as .env files) and are
 automatically injected into ``os.environ`` on load.
@@ -23,15 +23,15 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["UserSecretsManager"]
+__all__ = ["EnvSecretsManager"]
 
 
-class UserSecretsManager:
-    """Manage user secrets stored outside the project directory."""
+class EnvSecretsManager:
+    """Manage env secrets stored outside the project directory."""
 
     ENV_FILE_NAME = ".env"
     SECRETS_FILE_NAME = ".secrets"
-    USER_SECRETS_ID_KEY = "USER_SECRETS_ID"
+    ENV_SECRETS_ID_KEY = "ENV_SECRETS_ID"
 
     # ------------------------------------------------------------------
     # Construction
@@ -56,7 +56,7 @@ class UserSecretsManager:
         self.project_dir = Path(project_dir) if project_dir else Path.cwd()
         self.env_file_path = self.project_dir / self.ENV_FILE_NAME
         self.secrets_base_dir = _secrets_base_dir()
-        self.user_secrets_id: str | None = None
+        self.env_secrets_id: str | None = None
         self.secrets_path: Path | None = None
 
         if auto_init:
@@ -67,38 +67,38 @@ class UserSecretsManager:
     # ------------------------------------------------------------------
 
     def init(self) -> str:
-        """Initialise (or reconnect to) user secrets for this project.
+        """Initialise (or reconnect to) env secrets for this project.
 
-        * Reads ``USER_SECRETS_ID`` from ``.env`` – or generates a new GUID.
+        * Reads ``ENV_SECRETS_ID`` from ``.env`` – or generates a new GUID.
         * Creates the secrets directory and file if they don't exist.
         * Loads secrets into ``os.environ``.
 
-        Returns the user-secrets GUID.
+        Returns the env-secrets GUID.
         """
         env_vars = _read_dotenv(self.env_file_path)
 
-        if self.USER_SECRETS_ID_KEY in env_vars:
-            self.user_secrets_id = env_vars[self.USER_SECRETS_ID_KEY]
-            logger.info("Found existing USER_SECRETS_ID: %s", self.user_secrets_id)
+        if self.ENV_SECRETS_ID_KEY in env_vars:
+            self.env_secrets_id = env_vars[self.ENV_SECRETS_ID_KEY]
+            logger.info("Found existing ENV_SECRETS_ID: %s", self.env_secrets_id)
         else:
-            self.user_secrets_id = str(uuid.uuid4())
-            logger.info("Generated new USER_SECRETS_ID: %s", self.user_secrets_id)
+            self.env_secrets_id = str(uuid.uuid4())
+            logger.info("Generated new ENV_SECRETS_ID: %s", self.env_secrets_id)
             _upsert_env_key(
-                self.env_file_path, self.USER_SECRETS_ID_KEY, self.user_secrets_id
+                self.env_file_path, self.ENV_SECRETS_ID_KEY, self.env_secrets_id
             )
 
-        secrets_dir = self.secrets_base_dir / self.user_secrets_id
+        secrets_dir = self.secrets_base_dir / self.env_secrets_id
         secrets_dir.mkdir(parents=True, exist_ok=True)
         self.secrets_path = secrets_dir / self.SECRETS_FILE_NAME
 
         if not self.secrets_path.exists():
-            _write_secrets(self.secrets_path, {}, self.project_dir, self.user_secrets_id)
+            _write_secrets(self.secrets_path, {}, self.project_dir, self.env_secrets_id)
             logger.info("Created secrets file: %s", self.secrets_path)
         else:
             logger.info("Using existing secrets file: %s", self.secrets_path)
 
         self.load()
-        return self.user_secrets_id
+        return self.env_secrets_id
 
     def load(self) -> dict[str, str]:
         """Load secrets from disk and inject them into ``os.environ``.
@@ -120,7 +120,7 @@ class UserSecretsManager:
         assert self.secrets_path is not None
         secrets = _read_dotenv(self.secrets_path)
         secrets[key] = value
-        _write_secrets(self.secrets_path, secrets, self.project_dir, self.user_secrets_id)
+        _write_secrets(self.secrets_path, secrets, self.project_dir, self.env_secrets_id)
         os.environ[key] = value
         logger.info("Set secret: %s", key)
 
@@ -141,7 +141,7 @@ class UserSecretsManager:
         if key not in secrets:
             return False
         del secrets[key]
-        _write_secrets(self.secrets_path, secrets, self.project_dir, self.user_secrets_id)
+        _write_secrets(self.secrets_path, secrets, self.project_dir, self.env_secrets_id)
         os.environ.pop(key, None)
         logger.info("Deleted secret: %s", key)
         return True
@@ -154,7 +154,7 @@ class UserSecretsManager:
         count = len(secrets)
         for key in secrets:
             os.environ.pop(key, None)
-        _write_secrets(self.secrets_path, {}, self.project_dir, self.user_secrets_id)
+        _write_secrets(self.secrets_path, {}, self.project_dir, self.env_secrets_id)
         logger.info("Cleared %d secret(s)", count)
         return count
 
@@ -171,7 +171,7 @@ class UserSecretsManager:
             "project_dir": str(self.project_dir),
             "env_file": str(self.env_file_path),
             "env_file_exists": self.env_file_path.exists(),
-            "user_secrets_id": self.user_secrets_id,
+            "env_secrets_id": self.env_secrets_id,
             "secrets_base_dir": str(self.secrets_base_dir),
             "secrets_file": str(self.secrets_path) if self.secrets_path else None,
             "secrets_file_exists": self.secrets_path.exists() if self.secrets_path else False,
@@ -183,9 +183,9 @@ class UserSecretsManager:
     # ------------------------------------------------------------------
 
     def _ensure_initialised(self) -> None:
-        if self.secrets_path is None or self.user_secrets_id is None:
+        if self.secrets_path is None or self.env_secrets_id is None:
             raise RuntimeError(
-                "UserSecretsManager is not initialised. "
+                "EnvSecretsManager is not initialised. "
                 "Call init() or pass auto_init=True (the default)."
             )
 
@@ -196,17 +196,17 @@ class UserSecretsManager:
 
 
 def _secrets_base_dir() -> Path:
-    """Return the OS-appropriate base directory for user secrets."""
+    """Return the OS-appropriate base directory for env secrets."""
     system = platform.system()
     if system in ("Linux", "Darwin"):
-        return Path.home() / ".python" / "usersecrets"
+        return Path.home() / ".python" / "envsecrets"
     if system == "Windows":
         appdata = os.environ.get("APPDATA")
         if appdata:
-            return Path(appdata) / "Python" / "UserSecrets"
-        return Path.home() / "AppData" / "Roaming" / "Python" / "UserSecrets"
+            return Path(appdata) / "Python" / "EnvSecrets"
+        return Path.home() / "AppData" / "Roaming" / "Python" / "EnvSecrets"
     # Fallback
-    return Path.home() / ".python" / "usersecrets"
+    return Path.home() / ".python" / "envsecrets"
 
 
 def _read_dotenv(path: Path) -> dict[str, str]:
@@ -267,17 +267,17 @@ def _write_secrets(
     path: Path,
     secrets: dict[str, str],
     project_dir: Path | None = None,
-    user_secrets_id: str | None = None,
+    env_secrets_id: str | None = None,
 ) -> None:
     """Write a secrets dictionary to *path* in key=value format."""
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as fh:
-        fh.write("# Python User Secrets\n")
+        fh.write("# Python Env Secrets\n")
         fh.write("# Do not share or commit this file to source control.\n")
         if project_dir:
             fh.write(f"# Project: {project_dir}\n")
-        if user_secrets_id:
-            fh.write(f"# ID: {user_secrets_id}\n")
+        if env_secrets_id:
+            fh.write(f"# ID: {env_secrets_id}\n")
         fh.write("\n")
         for k, v in secrets.items():
             # Quote values that contain problematic characters

@@ -1,5 +1,5 @@
 """
-Basic usage — walks through the full user-secrets lifecycle.
+Basic usage — walks through the full env-secrets lifecycle.
 
 Run:
     python examples/basic_usage.py
@@ -9,7 +9,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from python_env_secrets import UserSecretsManager
+from python_env_secrets import EnvSecretsManager
 
 
 def main() -> None:
@@ -19,9 +19,9 @@ def main() -> None:
         print(f"Project directory: {project_dir}\n")
 
         # 1. Initialise ------------------------------------------------
-        print("1) Initialise user secrets")
-        manager = UserSecretsManager(project_dir=project_dir)
-        print(f"   USER_SECRETS_ID : {manager.user_secrets_id}")
+        print("1) Initialise env secrets")
+        manager = EnvSecretsManager(project_dir=project_dir)
+        print(f"   ENV_SECRETS_ID : {manager.env_secrets_id}")
         print(f"   Secrets file    : {manager.secrets_path}")
         print(f"   .env content    : {manager.env_file_path.read_text().strip()}")
 
@@ -66,8 +66,8 @@ def main() -> None:
 
         # 9. Re-init — GUID is reused ---------------------------------
         print("\n9) Re-initialise (same project dir)")
-        manager2 = UserSecretsManager(project_dir=project_dir)
-        print(f"   Same GUID? {manager2.user_secrets_id == manager.user_secrets_id}")
+        manager2 = EnvSecretsManager(project_dir=project_dir)
+        print(f"   Same GUID? {manager2.env_secrets_id == manager.env_secrets_id}")
 
     print("\nDone. Temp directory cleaned up automatically.")
 

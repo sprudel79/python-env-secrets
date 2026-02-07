@@ -30,16 +30,16 @@ secrets out of the project directory without requiring infrastructure.
 
 ```
 Your Project/
-├── .env                          # contains only: USER_SECRETS_ID=<guid>
+├── .env                          # contains only: ENV_SECRETS_ID=<guid>
 ├── ...
 
-~/.python/usersecrets/
+~/.python/envsecrets/
 └── <guid>/
     └── .secrets                  # actual secrets live here (key=value)
 ```
 
-1. A `USER_SECRETS_ID` (UUID) is stored in your project's `.env` file
-2. The actual secrets live in `~/.python/usersecrets/<guid>/.secrets`
+1. A `ENV_SECRETS_ID` (UUID) is stored in your project's `.env` file
+2. The actual secrets live in `~/.python/envsecrets/<guid>/.secrets`
 3. On initialisation, secrets are loaded into `os.environ`
 
 The `.secrets` file uses plain-text key=value format — the same syntax as
@@ -81,12 +81,12 @@ pip install python-env-secrets
 ### In your application
 
 ```python
-from python_env_secrets import init_user_secrets
+from python_env_secrets import init_env_secrets
 import os
 
 # Initialise at startup — creates GUID + directory on first run,
 # loads existing secrets on subsequent runs
-init_user_secrets()
+init_env_secrets()
 
 # Secrets are now in os.environ
 database_url = os.environ["DATABASE_URL"]
@@ -97,18 +97,18 @@ api_key = os.environ["API_KEY"]
 
 ```bash
 # Initialise for the current project
-user-secrets init
+env-secrets init
 
 # Manage secrets
-user-secrets set DATABASE_URL "postgresql://localhost/mydb"
-user-secrets set API_KEY "sk-secret-value"
-user-secrets get DATABASE_URL
-user-secrets list
-user-secrets delete API_KEY
-user-secrets clear
+env-secrets set DATABASE_URL "postgresql://localhost/mydb"
+env-secrets set API_KEY "sk-secret-value"
+env-secrets get DATABASE_URL
+env-secrets list
+env-secrets delete API_KEY
+env-secrets clear
 
 # Show configuration
-user-secrets info
+env-secrets info
 ```
 
 ## Usage
@@ -116,9 +116,9 @@ user-secrets info
 ### Direct manager usage
 
 ```python
-from python_env_secrets import UserSecretsManager
+from python_env_secrets import EnvSecretsManager
 
-manager = UserSecretsManager()          # auto-initialises
+manager = EnvSecretsManager()          # auto-initialises
 
 manager.set("API_KEY", "sk-...")
 manager.set("DB_URL", "postgres://...")
@@ -133,9 +133,9 @@ manager.clear()
 ### Convenience functions
 
 ```python
-from python_env_secrets import init_user_secrets, get_secret, set_secret
+from python_env_secrets import init_env_secrets, get_secret, set_secret
 
-init_user_secrets()
+init_env_secrets()
 
 set_secret("API_KEY", "sk-...")
 print(get_secret("API_KEY"))
@@ -145,7 +145,7 @@ print(get_secret("API_KEY"))
 
 Load `.env` defaults first, then layer secrets on top — non-sensitive
 configuration stays in `.env` (committable), sensitive values override
-from user secrets:
+from env secrets:
 
 ```python
 from python_env_secrets import integrate_with_dotenv
@@ -173,10 +173,10 @@ DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
 
 ```python
 from flask import Flask
-from python_env_secrets import init_user_secrets
+from python_env_secrets import init_env_secrets
 import os
 
-init_user_secrets()
+init_env_secrets()
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
@@ -185,9 +185,9 @@ app.config["SECRET_KEY"] = os.environ["SECRET_KEY"]
 **FastAPI with Pydantic Settings:**
 
 ```python
-from python_env_secrets import init_user_secrets
+from python_env_secrets import init_env_secrets
 
-init_user_secrets()  # call before Settings() is instantiated
+init_env_secrets()  # call before Settings() is instantiated
 
 from pydantic_settings import BaseSettings
 
@@ -201,14 +201,14 @@ class Settings(BaseSettings):
 
 | OS      | Path                                          |
 |---------|-----------------------------------------------|
-| Linux   | `~/.python/usersecrets/<guid>/.secrets`       |
-| macOS   | `~/.python/usersecrets/<guid>/.secrets`       |
-| Windows | `%APPDATA%\Python\UserSecrets\<guid>\.secrets`|
+| Linux   | `~/.python/envsecrets/<guid>/.secrets`       |
+| macOS   | `~/.python/envsecrets/<guid>/.secrets`       |
+| Windows | `%APPDATA%\Python\EnvSecrets\<guid>\.secrets`|
 
 ## Security considerations
 
 - Secrets live **outside** your project tree — they won't be caught by `git add .`, copied into Docker build contexts, or included in backups of your source directory
-- **AI coding assistants** (Copilot, Cursor, Codeium, etc.) that index your workspace will never see the actual secret values — only the GUID reference in `.env`
+- **AI coding assistants** that index your workspace will never see the actual secret values — only the GUID reference in `.env`
 - On Linux/macOS the `.secrets` file is created with `0600` permissions (owner read/write only)
 - Each project gets its own isolated GUID namespace — secrets don't leak between projects
 - The `.env` file in your project contains **only** the GUID reference, not the secrets

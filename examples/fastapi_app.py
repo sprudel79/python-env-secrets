@@ -9,7 +9,7 @@ Then visit:
     http://localhost:8000/health
     http://localhost:8000/settings
 
-This example shows the recommended pattern: initialise user secrets once at
+This example shows the recommended pattern: initialise env secrets once at
 module level, then read values from os.environ (or via pydantic-settings)
 throughout your application.
 """
@@ -19,20 +19,20 @@ import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from python_env_secrets import UserSecretsManager
+from python_env_secrets import EnvSecretsManager
 
 # ------------------------------------------------------------------
 # 1. Bootstrap secrets before the app starts
 #
 #    In a real project you'd just call:
-#        from python_env_secrets import init_user_secrets
-#        init_user_secrets()
+#        from python_env_secrets import init_env_secrets
+#        init_env_secrets()
 #
 #    Here we use a temp dir so the example is self-contained.
 # ------------------------------------------------------------------
 
 _tmp = tempfile.mkdtemp(prefix="fastapi_secrets_")
-_manager = UserSecretsManager(project_dir=Path(_tmp))
+_manager = EnvSecretsManager(project_dir=Path(_tmp))
 
 # Seed some secrets if this is the first run
 if _manager.info()["secrets_count"] == 0:
@@ -49,7 +49,7 @@ if _manager.info()["secrets_count"] == 0:
 
 @dataclass
 class Settings:
-    """Application settings — all values come from user secrets / env vars."""
+    """Application settings — all values come from env secrets / env vars."""
 
     app_name: str = field(default_factory=lambda: os.environ.get("APP_NAME", "App"))
     secret_key: str = field(default_factory=lambda: os.environ.get("SECRET_KEY", ""))
@@ -106,7 +106,7 @@ def create_app():  # noqa: ANN201
                 "debug": settings.debug,
                 "allowed_origins": settings.allowed_origins,
                 "secrets_file": str(_manager.secrets_path),
-                "user_secrets_id": _manager.user_secrets_id,
+                "env_secrets_id": _manager.env_secrets_id,
             }
         )
 
@@ -127,5 +127,5 @@ if __name__ == "__main__":
     import uvicorn
 
     print(f"\nSecrets loaded from: {_manager.secrets_path}")
-    print(f"USER_SECRETS_ID:     {_manager.user_secrets_id}\n")
+    print(f"ENV_SECRETS_ID:     {_manager.env_secrets_id}\n")
     uvicorn.run(app, host="127.0.0.1", port=8000)

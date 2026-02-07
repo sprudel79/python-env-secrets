@@ -3,13 +3,13 @@ Command-line interface for python-env-secrets.
 
 Usage::
 
-    user-secrets init
-    user-secrets set KEY VALUE
-    user-secrets get KEY
-    user-secrets list
-    user-secrets delete KEY
-    user-secrets clear
-    user-secrets info
+    env-secrets init
+    env-secrets set KEY VALUE
+    env-secrets get KEY
+    env-secrets list
+    env-secrets delete KEY
+    env-secrets clear
+    env-secrets info
 """
 
 from __future__ import annotations
@@ -18,13 +18,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from .manager import UserSecretsManager
+from .manager import EnvSecretsManager
 
 
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="user-secrets",
-        description="Manage user secrets outside your project directory.",
+        prog="env-secrets",
+        description="Manage env secrets outside your project directory.",
     )
     parser.add_argument(
         "-p",
@@ -35,7 +35,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command")
 
-    sub.add_parser("init", help="Initialise user secrets for this project")
+    sub.add_parser("init", help="Initialise env secrets for this project")
     sub.add_parser("list", help="List all stored secrets")
     sub.add_parser("info", help="Show configuration details")
     sub.add_parser("clear", help="Remove all secrets")
@@ -61,11 +61,11 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 0
 
-    manager = UserSecretsManager(project_dir=args.project, auto_init=True)
+    manager = EnvSecretsManager(project_dir=args.project, auto_init=True)
 
     if args.command == "init":
-        uid = manager.user_secrets_id
-        print(f"Initialised with USER_SECRETS_ID: {uid}")
+        uid = manager.env_secrets_id
+        print(f"Initialised with ENV_SECRETS_ID: {uid}")
         print(f"Secrets file: {manager.secrets_path}")
 
     elif args.command == "set":
@@ -103,7 +103,7 @@ def main(argv: list[str] | None = None) -> int:
         info = manager.info()
         print(f"  Project directory : {info['project_dir']}")
         print(f"  .env file         : {info['env_file']}  (exists: {info['env_file_exists']})")
-        print(f"  USER_SECRETS_ID   : {info['user_secrets_id']}")
+        print(f"  ENV_SECRETS_ID   : {info['env_secrets_id']}")
         print(f"  Secrets file      : {info['secrets_file']}")
         print(f"  Secrets count     : {info['secrets_count']}")
 

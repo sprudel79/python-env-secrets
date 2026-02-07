@@ -3,17 +3,17 @@ python-env-secrets — keep sensitive configuration out of your project director
 
 Quick start::
 
-    from python_env_secrets import UserSecretsManager
+    from python_env_secrets import EnvSecretsManager
 
-    secrets = UserSecretsManager()      # auto-initialises
+    secrets = EnvSecretsManager()      # auto-initialises
     secrets.set("API_KEY", "sk-...")
     print(secrets.get("API_KEY"))
 
 Or use the convenience helpers::
 
-    from python_env_secrets import init_user_secrets, load_user_secrets
+    from python_env_secrets import init_env_secrets, load_env_secrets
 
-    init_user_secrets()
+    init_env_secrets()
 
     import os
     print(os.environ["API_KEY"])
@@ -23,12 +23,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .manager import UserSecretsManager
+from .manager import EnvSecretsManager
 
 __all__ = [
-    "UserSecretsManager",
-    "init_user_secrets",
-    "load_user_secrets",
+    "EnvSecretsManager",
+    "init_env_secrets",
+    "load_env_secrets",
     "get_secret",
     "set_secret",
     "integrate_with_dotenv",
@@ -40,25 +40,25 @@ __version__ = "0.1.0"
 # Module-level convenience functions
 # ---------------------------------------------------------------------------
 
-_default_manager: UserSecretsManager | None = None
+_default_manager: EnvSecretsManager | None = None
 
 
-def _get_manager() -> UserSecretsManager:
+def _get_manager() -> EnvSecretsManager:
     global _default_manager
     if _default_manager is None:
-        _default_manager = UserSecretsManager(auto_init=True)
+        _default_manager = EnvSecretsManager(auto_init=True)
     return _default_manager
 
 
-def init_user_secrets(project_dir: Path | None = None) -> UserSecretsManager:
-    """Initialise user secrets for the current project and return the manager."""
+def init_env_secrets(project_dir: Path | None = None) -> EnvSecretsManager:
+    """Initialise env secrets for the current project and return the manager."""
     global _default_manager
-    _default_manager = UserSecretsManager(project_dir, auto_init=True)
+    _default_manager = EnvSecretsManager(project_dir, auto_init=True)
     return _default_manager
 
 
-def load_user_secrets() -> dict[str, str]:
-    """Load all user secrets into ``os.environ`` and return them."""
+def load_env_secrets() -> dict[str, str]:
+    """Load all env secrets into ``os.environ`` and return them."""
     return _get_manager().load()
 
 
@@ -73,7 +73,7 @@ def set_secret(key: str, value: str) -> None:
 
 
 def integrate_with_dotenv() -> bool:
-    """Load ``.env`` via *python-dotenv* first, then layer user secrets on top.
+    """Load ``.env`` via *python-dotenv* first, then layer env secrets on top.
 
     Returns ``True`` if python-dotenv was available, ``False`` otherwise.
     """
@@ -82,8 +82,8 @@ def integrate_with_dotenv() -> bool:
 
         load_dotenv()
     except ImportError:
-        load_user_secrets()
+        load_env_secrets()
         return False
 
-    load_user_secrets()
+    load_env_secrets()
     return True

@@ -45,7 +45,7 @@ dev = [
 ]
 
 [project.scripts]
-user-secrets = "python_env_secrets.cli:main"
+env-secrets = "python_env_secrets.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/sprudel79/python-env-secrets"

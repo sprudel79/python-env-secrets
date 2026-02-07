@@ -17,7 +17,7 @@ import os
 import tempfile
 from pathlib import Path
 
-from python_env_secrets import UserSecretsManager
+from python_env_secrets import EnvSecretsManager
 
 
 def main() -> None:
@@ -55,13 +55,13 @@ def main() -> None:
         print(f"   DATABASE_URL = {os.environ.get('DATABASE_URL')}")
         print(f"   API_KEY      = {os.environ.get('API_KEY')}")
 
-        # ----- Step 3: Init user secrets (adds GUID to .env) ----------
-        print("\n3) Initialise user secrets")
-        manager = UserSecretsManager(project_dir=project_dir)
-        print(f"   USER_SECRETS_ID: {manager.user_secrets_id}")
+        # ----- Step 3: Init env secrets (adds GUID to .env) ----------
+        print("\n3) Initialise env secrets")
+        manager = EnvSecretsManager(project_dir=project_dir)
+        print(f"   ENV_SECRETS_ID: {manager.env_secrets_id}")
 
         # ----- Step 4: Store real secrets -----------------------------
-        print("\n4) Set sensitive overrides in user secrets")
+        print("\n4) Set sensitive overrides in env secrets")
         manager.set("DATABASE_URL", "postgresql://prod-user:s3cret@db.example.com/app")
         manager.set("API_KEY", "sk-live-abc123xyz")
 
@@ -90,7 +90,7 @@ def main() -> None:
         print("       from python_env_secrets import integrate_with_dotenv")
         print("       integrate_with_dotenv()")
         print()
-        print("   This loads .env first, then layers user secrets on top.")
+        print("   This loads .env first, then layers env secrets on top.")
 
     print("\nDone.")
 
