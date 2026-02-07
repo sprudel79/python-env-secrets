@@ -56,17 +56,25 @@ The `.secrets` file uses plain-text key=value format — the same syntax as
 
 ## Installation
 
+Install directly from GitHub:
+
 ```bash
-pip install python-env-secrets
+pip install git+https://github.com/sprudel79/python-env-secrets.git
 ```
 
 With optional [python-dotenv](https://github.com/theskumar/python-dotenv) integration:
 
 ```bash
-pip install python-env-secrets[dotenv]
+pip install "python-env-secrets[dotenv] @ git+https://github.com/sprudel79/python-env-secrets.git"
 ```
 
-**Requires Python 3.12 or later.**
+Once published to PyPI, it will also be available via:
+
+```bash
+pip install python-env-secrets
+```
+
+**Requires Python 3.11 or later.**
 
 ## Quick start
 

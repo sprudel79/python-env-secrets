@@ -11,6 +11,8 @@ Secrets are plain-text key=value pairs (same format as .env files) and are
 automatically injected into ``os.environ`` on load.
 """
 
+from __future__ import annotations
+
 import logging
 import os
 import platform

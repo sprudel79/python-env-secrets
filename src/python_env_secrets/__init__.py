@@ -19,6 +19,8 @@ Or use the convenience helpers::
     print(os.environ["API_KEY"])
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 
 from .manager import UserSecretsManager
