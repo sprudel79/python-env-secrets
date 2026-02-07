@@ -233,7 +233,7 @@ service dependencies.
 ## Development
 
 ```bash
-git clone https://github.com/yourname/python-env-secrets.git
+git clone https://github.com/sprudel79/python-env-secrets.git
 cd python-env-secrets
 pip install -e ".[dev]"
 pytest

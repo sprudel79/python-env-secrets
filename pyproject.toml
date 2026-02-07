@@ -47,10 +47,10 @@ dev = [
 user-secrets = "python_env_secrets.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/yourname/python-env-secrets"
-Documentation = "https://github.com/yourname/python-env-secrets#readme"
-Repository = "https://github.com/yourname/python-env-secrets"
-Issues = "https://github.com/yourname/python-env-secrets/issues"
+Homepage = "https://github.com/sprudel79/python-env-secrets"
+Documentation = "https://github.com/sprudel79/python-env-secrets#readme"
+Repository = "https://github.com/sprudel79/python-env-secrets"
+Issues = "https://github.com/sprudel79/python-env-secrets/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/python_env_secrets"]
